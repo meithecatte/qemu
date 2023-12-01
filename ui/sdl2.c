@@ -507,7 +507,17 @@ static void handle_mousemotion(SDL_Event *ev)
 
     if (qemu_input_is_absolute(scon->dcl.con) || absolute_enabled) {
         int scr_w, scr_h;
-        SDL_GetWindowSize(scon->real_window, &scr_w, &scr_h);
+        if (scon->real_renderer) {
+            SDL_RenderGetLogicalSize(scon->real_renderer, &scr_w, &scr_h);
+        }
+        /*
+         * SDL_RenderGetLogicalSize may return 0x0 if the logical size
+         * hasn't been set yet. Fall back to SDL_GetWindowSize just like
+         * we would for the OpenGL no-renderer case.
+         */
+        if (!scon->real_renderer || scr_w == 0 || scr_h == 0) {
+            SDL_GetWindowSize(scon->real_window, &scr_w, &scr_h);
+        }
         max_x = scr_w - 1;
         max_y = scr_h - 1;
         if (gui_grab && !gui_fullscreen
