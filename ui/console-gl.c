@@ -138,7 +138,7 @@ void surface_gl_destroy_texture(QemuGLShader *gls,
     surface->texture = 0;
 }
 
-void surface_gl_setup_viewport(QemuGLShader *gls,
+Viewport surface_gl_setup_viewport(QemuGLShader *gls,
                                DisplaySurface *surface,
                                int ww, int wh)
 {
@@ -152,11 +152,22 @@ void surface_gl_setup_viewport(QemuGLShader *gls,
 
     sw = (float)ww/gw;
     sh = (float)wh/gh;
+
+    Viewport viewport;
     if (sw < sh) {
         stripe = wh - wh*sw/sh;
-        glViewport(0, stripe / 2, ww, wh - stripe);
+        viewport.x = 0;
+        viewport.y = stripe / 2;
+        viewport.w = ww;
+        viewport.h = wh - stripe;
     } else {
         stripe = ww - ww*sh/sw;
-        glViewport(stripe / 2, 0, ww - stripe, wh);
+        viewport.x = stripe / 2;
+        viewport.y = 0;
+        viewport.w = ww - stripe;
+        viewport.h = wh;
     }
+
+    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
+    return viewport;
 }

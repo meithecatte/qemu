@@ -54,7 +54,7 @@ static void sdl2_gl_render_surface(struct sdl2_console *scon)
     sdl2_set_scanout_mode(scon, false);
 
     SDL_GetWindowSize(scon->real_window, &ww, &wh);
-    surface_gl_setup_viewport(scon->gls, scon->surface, ww, wh);
+    scon->viewport = surface_gl_setup_viewport(scon->gls, scon->surface, ww, wh);
 
     surface_gl_render_texture(scon->gls, scon->surface);
     SDL_GL_SwapWindow(scon->real_window);
@@ -194,8 +194,6 @@ void sdl2_gl_scanout_disable(DisplayChangeListener *dcl)
     struct sdl2_console *scon = container_of(dcl, struct sdl2_console, dcl);
 
     assert(scon->opengl);
-    scon->w = 0;
-    scon->h = 0;
     sdl2_set_scanout_mode(scon, false);
 }
 
@@ -211,10 +209,6 @@ void sdl2_gl_scanout_texture(DisplayChangeListener *dcl,
     struct sdl2_console *scon = container_of(dcl, struct sdl2_console, dcl);
 
     assert(scon->opengl);
-    scon->x = x;
-    scon->y = y;
-    scon->w = w;
-    scon->h = h;
     scon->y0_top = backing_y_0_top;
 
     SDL_GL_MakeCurrent(scon->real_window, scon->winctx);

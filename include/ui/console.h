@@ -156,6 +156,13 @@ typedef struct QemuUIInfo {
     uint32_t  refresh_rate;
 } QemuUIInfo;
 
+typedef struct Viewport {
+    int x;
+    int y;
+    int w;
+    int h;
+} Viewport;
+
 /* cursor data format is 32bit RGBA */
 typedef struct QEMUCursor {
     uint16_t            width, height;
@@ -451,7 +458,7 @@ void surface_gl_render_texture(QemuGLShader *gls,
                                DisplaySurface *surface);
 void surface_gl_destroy_texture(QemuGLShader *gls,
                                DisplaySurface *surface);
-void surface_gl_setup_viewport(QemuGLShader *gls,
+Viewport surface_gl_setup_viewport(QemuGLShader *gls,
                                DisplaySurface *surface,
                                int ww, int wh);
 #endif

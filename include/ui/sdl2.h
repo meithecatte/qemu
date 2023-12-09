@@ -36,7 +36,6 @@ struct sdl2_console {
     SDL_Renderer *real_renderer;
     int idx;
     int last_vm_running; /* per console for caption reasons */
-    int x, y, w, h;
     int hidden;
     int opengl;
     int updates;
@@ -50,6 +49,7 @@ struct sdl2_console {
     egl_fb win_fb;
     bool y0_top;
     bool scanout_mode;
+    Viewport viewport;
 #endif
 };
 

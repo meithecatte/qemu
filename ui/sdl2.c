@@ -208,8 +208,10 @@ static void sdl_hide_cursor(struct sdl2_console *scon)
         return;
     }
 
+    /*
     SDL_ShowCursor(SDL_DISABLE);
     SDL_SetCursor(sdl_cursor_hidden);
+    */
 
     if (!qemu_input_is_absolute(scon->dcl.con)) {
         SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -319,11 +321,32 @@ static void sdl_send_mouse_event(struct sdl2_console *scon, int dx, int dy,
         prev_state = state;
     }
 
+    int sw = surface_width(scon->surface);
+    int sh = surface_height(scon->surface);
+
+    /*
+     * In non-GL mode, SDL does the scaling for us thanks to
+     * SDL_RenderSetLogicalSize. Unfortunately there is no equivalent
+     * for GL mode, so we need to implement that ourselves.
+     */
+#ifdef CONFIG_OPENGL
+    if (scon->opengl) {
+        x -= scon->viewport.x;
+        y -= scon->viewport.y;
+        x = x * sw / scon->viewport.w;
+        y = y * sh / scon->viewport.h;
+    }
+#endif
+
+    if (x < 0) x = 0;
+    else if (x >= sw) x = sw - 1;
+
+    if (y < 0) y = 0;
+    if (y >= sh) y = sh - 1;
+
     if (qemu_input_is_absolute(scon->dcl.con)) {
-        qemu_input_queue_abs(scon->dcl.con, INPUT_AXIS_X,
-                             x, 0, surface_width(scon->surface));
-        qemu_input_queue_abs(scon->dcl.con, INPUT_AXIS_Y,
-                             y, 0, surface_height(scon->surface));
+        qemu_input_queue_abs(scon->dcl.con, INPUT_AXIS_X, x, 0, sw - 1);
+        qemu_input_queue_abs(scon->dcl.con, INPUT_AXIS_Y, y, 0, sh - 1);
     } else {
         if (guest_cursor) {
             x -= guest_x;
@@ -607,6 +630,7 @@ static void handle_windowevent(SDL_Event *ev)
             memset(&info, 0, sizeof(info));
             info.width = ev->window.data1;
             info.height = ev->window.data2;
+            printf("SDL_WINDOWEVENT_RESIZED %d %d\n", info.width, info.height);
             dpy_set_ui_info(scon->dcl.con, &info, true);
         }
         sdl2_redraw(scon);
